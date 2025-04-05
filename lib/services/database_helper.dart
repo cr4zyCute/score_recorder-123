@@ -3,7 +3,14 @@ import 'package:path/path.dart';
 import '../models/quiz.dart';
 
 class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
+
+  factory DatabaseHelper() {
+    return _instance;
+  }
+
+  DatabaseHelper._internal();
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -15,22 +22,22 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'quizzes.db');
     return await openDatabase(
       path,
-      version: 2, // Increment version to trigger upgrade
-      onUpgrade: (db, oldVersion, newVersion) {
+      version: 2, // Increment when making schema changes
+      onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-          db.execute(
+          await db.execute(
             'ALTER TABLE quizzes ADD COLUMN passed INTEGER NOT NULL DEFAULT 0',
           );
         }
       },
-      onCreate: (db, version) {
-        db.execute('''
+      onCreate: (db, version) async {
+        await db.execute('''
           CREATE TABLE quizzes(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             quizName TEXT NOT NULL,
             score INTEGER NOT NULL,
             overallScore INTEGER NOT NULL,
-            passed INTEGER NOT NULL
+            passed INTEGER NOT NULL DEFAULT 0
           )
         ''');
       },
@@ -39,18 +46,36 @@ class DatabaseHelper {
 
   Future<int> insertQuiz(Quiz quiz) async {
     final db = await database;
-    print("Inserting Quiz: ${quiz.toMap()}"); // Debugging
     int result = await db.insert('quizzes', quiz.toMap());
-    print("Inserted Quiz ID: $result"); // Debugging
     return result;
   }
 
   Future<List<Quiz>> getQuizzes() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('quizzes');
-    print("Fetched Quizzes: $maps"); // Debugging
-    return List.generate(maps.length, (i) {
-      return Quiz.fromMap(maps[i]);
-    });
+    return maps.map((quiz) => Quiz.fromMap(quiz)).toList();
+  }
+
+  Future<int> updateQuiz(Quiz quiz) async {
+    final db = await database;
+    return await db.update(
+      'quizzes',
+      quiz.toMap(),
+      where: 'id = ?',
+      whereArgs: [quiz.id],
+    );
+  }
+
+  Future<int> deleteQuiz(int id) async {
+    final db = await database;
+    return await db.delete('quizzes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> closeDatabase() async {
+    final db = _database;
+    if (db != null) {
+      await db.close();
+      _database = null;
+    }
   }
 }

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'quiz_view.dart'; // Import your quiz screen
 
 class FailScreen extends StatelessWidget {
   final int score;
   final int overallScore;
 
-  const FailScreen({super.key, required this.score, required this.overallScore});
+  const FailScreen({
+    super.key,
+    required this.score,
+    required this.overallScore,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +33,18 @@ class FailScreen extends StatelessWidget {
                 'You Failed',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 5),
-              Text('Score: $score/$overallScore'),
               SizedBox(height: 10),
-              Image.asset('assets/sad_image.png', height: 100), // Add image
+              Text('Score: $score/$overallScore'),
               SizedBox(height: 20),
+              Image.asset('assets/failed.png', height: 100), // Add image
+              SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const QuizView()),
+                    (Route<dynamic> route) =>
+                        false, // Removes all previous routes
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'quiz_view.dart'; // Import the QuizView screen
 
 class PassScreen extends StatelessWidget {
   final int score;
   final int overallScore;
 
-  const PassScreen({super.key, required this.score, required this.overallScore});
+  const PassScreen({
+    super.key,
+    required this.score,
+    required this.overallScore,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +36,23 @@ class PassScreen extends StatelessWidget {
               SizedBox(height: 5),
               Text('Score: $score/$overallScore'),
               SizedBox(height: 10),
-              Image.asset('assets/happy_kids.png', height: 100), // Add image
+              Image.asset(
+                'assets/pass.png',
+                height: 180, // Adjust height
+                width: 180, // Adjust width proportionally
+                fit: BoxFit.contain, // Ensures it scales correctly
+              ),
+              // Add image
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const QuizView()),
+                    (Route<dynamic> route) =>
+                        false, // Removes all previous routes
+                  );
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),

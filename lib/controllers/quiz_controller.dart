@@ -21,4 +21,9 @@ class QuizController {
     ); // Debugging
     return quizzes;
   }
+
+  Future<void> deleteQuiz(int quizId) async {
+    print("Deleting Quiz ID: $quizId");
+    await _dbHelper.deleteQuiz(quizId);
+  }
 }
